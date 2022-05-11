@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces
@@ -15,12 +14,7 @@ var _ tfsdk.Provider = &provider{}
 // provider satisfies the tfsdk.Provider interface and usually is included
 // with all Resource and DataSource implementations.
 type provider struct {
-	// client can contain the upstream provider SDK or HTTP client used to
-	// communicate with the upstream service. Resource and DataSource
-	// implementations can then make calls using this client.
-	//
-	// TODO: If appropriate, implement upstream provider SDK or HTTP client.
-	// client vendorsdk.ExampleClient
+	apiEndpoint string
 
 	// configured is set to true at the end of the Configure method.
 	// This can be used in Resource and DataSource implementations to verify
@@ -34,9 +28,7 @@ type provider struct {
 }
 
 // providerData can be used to store data from the Terraform configuration.
-type providerData struct {
-	Example types.String `tfsdk:"example"`
-}
+type providerData struct{}
 
 func (p *provider) Configure(ctx context.Context, req tfsdk.ConfigureProviderRequest, resp *tfsdk.ConfigureProviderResponse) {
 	var data providerData
@@ -57,33 +49,26 @@ func (p *provider) Configure(ctx context.Context, req tfsdk.ConfigureProviderReq
 }
 
 func (p *provider) GetResources(ctx context.Context) (map[string]tfsdk.ResourceType, diag.Diagnostics) {
-	return map[string]tfsdk.ResourceType{
-		"scaffolding_example": exampleResourceType{},
-	}, nil
+	return map[string]tfsdk.ResourceType{}, nil
 }
 
 func (p *provider) GetDataSources(ctx context.Context) (map[string]tfsdk.DataSourceType, diag.Diagnostics) {
 	return map[string]tfsdk.DataSourceType{
-		"scaffolding_example": exampleDataSourceType{},
+		"poetry": poemDataSourceType{},
 	}, nil
 }
 
 func (p *provider) GetSchema(ctx context.Context) (tfsdk.Schema, diag.Diagnostics) {
 	return tfsdk.Schema{
-		Attributes: map[string]tfsdk.Attribute{
-			"example": {
-				MarkdownDescription: "Example provider attribute",
-				Optional:            true,
-				Type:                types.StringType,
-			},
-		},
+		Attributes: map[string]tfsdk.Attribute{},
 	}, nil
 }
 
-func New(version string) func() tfsdk.Provider {
+func New(version string, apiEndpoint string) func() tfsdk.Provider {
 	return func() tfsdk.Provider {
 		return &provider{
-			version: version,
+			version:     version,
+			apiEndpoint: apiEndpoint,
 		}
 	}
 }
